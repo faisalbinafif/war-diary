@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<!-- Declares HTML5 document type so all modern browsers render the page properly -->
+<html lang="en">
+<head>
+  <!-- Sets UTF-8 encoding so symbols like ✓ and • render properly -->
+  <meta charset="UTF-8">
+  <!-- Ensures responsive scaling on phones, tablets, and desktops -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Browser tab title -->
+  <title>Zero to Zero-Day | War Diary</title>
+
+  <!-- ========================================================================
+       EMBEDDED CSS (STYLING)
+       Everything inside <style> controls colors, fonts, spacing, and layout.
+       ======================================================================== -->
+  <style>
+    /* [UPDATE HERE] Change any hex color code below to re-theme the whole page */
+    :root {
+      --bg: #090d16;           /* Main page background */
+      --surface: #111827;      /* Diary entry card background */
+      --border: #1f2937;       /* Subtle border lines */
+      --text: #e5e7eb;         /* Main readable text color */
+      --muted: #9ca3af;        /* Dimmed text for dates and subtitles */
+      --cyan: #38bdf8;         /* Highlight color for Foundations (Phases 0-2) */
+      --amber: #f59e0b;        /* Highlight color for Pentesting (Phases 3-4) */
+      --purple: #a855f7;       /* Highlight color for Exploit Dev (Phases 5-10) */
+      --emerald: #10b981;      /* Green color for completion status */
+      --code-bg: #05080f;      /* Dark background for terminal code boxes */
+    }
+
+    /* Keeps padding and borders inside the element's total width */
+    * { box-sizing: border-box; }
+
+    /* Centers the diary in a readable 960px column */
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem;
+    }
+
+    /* Top dashboard banner */
+    header {
+      background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--cyan);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Gradient title text */
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0 0 1.25rem 0;
+      font-size: 0.95rem;
+    }
+
+    /* Flexbox row for top progress badges */
+    .stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+    }
+
+    .stat-pill {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--cyan);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* Interactive filter button row */
+    .filter-bar {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+
+    .filter-btn {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--cyan);
+      color: #090d16;
+      border-color: var(--cyan);
+    }
+
+    /* Individual diary log card */
+    .entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-bottom: 1.75rem;
+      transition: border-color 0.15s ease;
+    }
+
+    .entry:hover { border-color: #374151; }
+
+    /* Top row inside each card (Phase badge + Date + Right-aligned Status) */
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Phase color classes */
+    .badge-foundation { background: rgba(56, 189, 248, 0.15); color: var(--cyan); }
+    .badge-pentest    { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+    .badge-exploit    { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+
+    .status {
+      color: var(--emerald);
+      font-weight: 700;
+      margin-left: auto; /* Pushes completion text to the far right */
+    }
+
+    h2 { margin: 0 0 1rem 0; font-size: 1.35rem; color: #ffffff; }
+
+    h3 {
+      color: var(--cyan);
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 1.25rem 0 0.5rem 0;
+    }
+
+    /* Multi-line terminal & code boxes */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--cyan);
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+    }
+
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 0.88rem;
+      color: #f3f4f6;
+    }
+
+    /* Inline code pills inside paragraphs */
+    p code {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--cyan);
+    }
+  </style>
+</head>
+
+<!-- ==========================================================================
+     HTML BODY (VISIBLE PAGE CONTENT)
+     Everything inside <body> is what visitors see on your live website.
+     ========================================================================== -->
+<body>
+
+  <!-- TOP DASHBOARD HEADER -->
+  <header>
+    <h1>ZERO TO ZERO-DAY WAR DIARY</h1>
+    <p class="subtitle">80% Doing • 20% Reading • Break Things on Purpose • Public Proof Over Certificates</p>
+
+    <!-- [UPDATE HERE] Update your current phase and rooted machine count manually -->
+    <div class="stats">
+      <span class="stat-pill">Current Focus: Phase 0 (Linux)</span>
+      <!-- JavaScript automatically updates the number inside id="entry-count" -->
+      <span class="stat-pill">Entries Logged: <span id="entry-count">0</span></span>
+      <span class="stat-pill">Machines Rooted: 0</span>
+    </div>
+  </header>
+
+  <!-- CATEGORY FILTER BAR (DO NOT EDIT) -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterEntries('all', this)">All Logs</button>
+    <button class="filter-btn" onclick="filterEntries('foundation', this)">Phases 0–2 (Foundations)</button>
+    <button class="filter-btn" onclick="filterEntries('pentest', this)">Phases 3–4 (Pentesting)</button>
+    <button class="filter-btn" onclick="filterEntries('exploit', this)">Phases 5–10 (Exploit &amp; Kernel)</button>
+  </div>
+
+  <!-- ========================================================================
+       MAIN DIARY FEED
+       [ADD HERE] Paste new <article class="entry"> blocks right below <main>
+       [DELETE HERE] Delete the two example <article> blocks once you add yours
+       ======================================================================== -->
+  <main id="diary-feed">
+
+    <!-- EXAMPLE ENTRY 1 (EXPLOTATION PHASE) -->
+    <article class="entry" data-category="exploit">
+      <div class="meta">
+        <span class="badge badge-exploit">Phase 5 • Section 5C.8</span>
+        <span>2026-11-16</span>
+        <span class="status">[✓ MILESTONE PASSED]</span>
+      </div>
+
+      <h2>Finding Stack Buffer Overflow Offset in GDB</h2>
+
+      <h3>1. Objective</h3>
+      <p>Compile a vulnerable C program without stack protections and calculate the exact byte offset needed to overwrite the saved instruction pointer (<code>RIP</code>).</p>
+
+      <h3>2. Commands &amp; Code</h3>
+      <pre><code>// vuln.c
+#include &lt;stdio.h&gt;
+void vuln() {
+    char buffer[64];
+    gets(buffer);
+}
+int main() { vuln(); return 0; }
+
+// Compiled with: gcc -fno-stack-protector -no-pie vuln.c -o vuln
+gdb ./vuln -ex "run &lt;&lt;&lt; $(python3 -c 'print("A"*72 + "BBBBBB")')"</code></pre>
+
+      <h3>3. Root Cause &amp; Takeaway</h3>
+      <p>Because <code>gets()</code> performs no bounds checking, writing past the 64-byte buffer overwrote the 8-byte saved <code>RBP</code> register at offset 64 and corrupted <code>RIP</code> starting at byte 72.</p>
+    </article>
+
+    <!-- EXAMPLE ENTRY 2 (FOUNDATION PHASE) -->
+    <article class="entry" data-category="foundation">
+      <div class="meta">
+        <span class="badge badge-foundation">Phase 0 • Section 1.5</span>
+        <span>2026-11-16</span>
+        <span class="status">[✓ COMPLETE]</span>
+      </div>
+
+      <h2>Linux File Operations &amp; Directory Trees</h2>
+
+      <h3>1. Objective</h3>
+      <p>Recreate a nested directory structure from memory using only terminal commands without touching the mouse.</p>
+
+      <h3>2. Commands Executed</h3>
+      <pre><code>mkdir -p ~/lab/projects/{scripts,notes,logs}
+touch ~/lab/projects/scripts/recon.sh
+cp ~/lab/projects/scripts/recon.sh ~/lab/projects/notes/recon.bak
+ls -laR ~/lab</code></pre>
+
+      <h3>3. What Broke &amp; What I Learned</h3>
+      <p>Running <code>mkdir</code> without the <code>-p</code> flag failed because the parent folder did not exist yet. Adding <code>-p</code> creates all missing parent directories in one command.</p>
+    </article>
+
+  </main>
+
+  <!-- ========================================================================
+       EMBEDDED JAVASCRIPT (INTERACTIVITY)
+       Handles automatic entry counting and filter button clicks.
+       ======================================================================== -->
+  <script>
+    // Counts every <article class="entry"> element and updates the top header badge
