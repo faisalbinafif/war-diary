@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zero to Zero-Day | War Diary</title>
+
+  <style>
+    :root {
+      --bg: #050709;
+      --surface: rgba(13, 18, 28, 0.85);
+      --surface-solid: #0d121c;
+      --border: rgba(56, 189, 248, 0.16);
+      --border-subtle: #1b2434;
+      --text: #e2e8f0;
+      --muted: #8b9bb4;
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.22);
+      --amber: #ffb800;
+      --crimson: #ff3366;
+      --emerald: #00e676;
+      --code-bg: #030508;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.08) 0%, transparent 55%);
+      background-size: 36px 36px, 36px 36px, 100% 100%;
+      color: var(--text);
+      line-height: 1.65;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      padding: 1.25rem 1.75rem;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 0.85rem 0.85rem;
+      }
+    }
+
+    /* Terminal HUD Header Window */
+    header {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 24px rgba(0, 240, 255, 0.06);
+    }
+
+    .terminal-bar {
+      background: rgba(6, 9, 15, 0.9);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.6rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .terminal-path {
+      margin-left: 0.5rem;
+      color: var(--muted);
+    }
+
+    .live-indicator {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--emerald);
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulseAnim 2s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .header-body {
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+    }
+
+    h1 {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.85rem;
+      letter-spacing: 0.8px;
+      background: linear-gradient(90deg, #ffffff 0%, #00f0ff 60%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.88rem;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    }
+
+    /* HUD Telemetry Stats */
+    .stats {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    }
+
+    .stat-pill {
+      background: rgba(0, 240, 255, 0.06);
+      border: 1px solid rgba(0, 240, 255, 0.22);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .stat-pill span {
+      color: var(--cyan);
+    }
+
+    /* Filter Bar + Expandable Search */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-btn {
+      background: var(--surface-solid);
+      color: var(--muted);
+      border: 1px solid var(--border-subtle);
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.83rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--cyan);
+      color: #ffffff;
+    }
+
+    .filter-btn.active {
+      background: rgba(0, 240, 255, 0.14);
+      color: var(--cyan);
+      border-color: var(--cyan);
+      box-shadow: 0 0 14px var(--cyan-glow);
+    }
+
+    /* Expandable Magnifying Glass Search */
+    .search-wrapper {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      background: var(--surface-solid);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 2px;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .search-wrapper.open {
+      border-color: var(--cyan);
+      box-shadow: 0 0 14px var(--cyan-glow);
+    }
+
+    .search-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--cyan);
+      padding: 6px 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .search-toggle-btn:hover {
+      background: rgba(0, 240, 255, 0.1);
+    }
+
+    .search-input {
+      width: 0;
+      opacity: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #ffffff;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 0.83rem;
+      outline: none;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, padding 0.3s ease;
+    }
+
+    .search-wrapper.open .search-input {
+      width: 260px;
+      opacity: 1;
+      padding: 5px 10px 5px 4px;
+    }
+
+    /* Full-Width Diary Log Cards */
+    .entry {
+      background: var(--surface);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--cyan);
+      border-radius: 12px;
+      padding: 1.65rem 1.85rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+      transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .entry[data-category="pentest"] {
+      border-left-color: var(--amber);
+    }
+
+    .entry[data-category="exploit"] {
+      border-left-color: var(--crimson);
+    }
+
+    .entry:hover {
+      border-color: rgba(0, 240, 255, 0.35);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .badge-foundation {
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 240, 255, 0.28);
+    }
+
+    .badge-pentest {
+      background: rgba(255, 184, 0, 0.12);
+      color: var(--amber);
+      border: 1px solid rgba(255, 184, 0, 0.28);
+    }
+
+    .badge-exploit {
+      background: rgba(255, 51, 102, 0.12);
+      color: var(--crimson);
+      border: 1px solid rgba(255, 51, 102, 0.28);
+    }
+
+    .status {
+      color: var(--emerald);
+      font-weight: 700;
+      margin-left: auto;
+    }
+
+    h2 {
+      margin: 0 0 0.85rem 0;
+      font-size: 1.35rem;
+      color: #f8fafc;
+    }
+
+    h3 {
+      color: var(--cyan);
+      font-size: 0.86rem;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 1.25rem 0 0.45rem 0;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(0, 240, 255, 0.45);
+    }
+
+    a:hover {
+      border-bottom-style: solid;
+    }
+
+    /* Terminal Code Blocks */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--cyan);
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+      position: relative;
+    }
+
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 0.86rem;
+      color: #e2e8f0;
+    }
+
+    p code {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.16);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--cyan);
+    }
+
+    /* Empty State ("No Logs Found") */
+    #no-results {
+      display: none;
+      text-align: center;
+      background: var(--surface);
+      border: 1px dashed rgba(255, 184, 0, 0.35);
+      border-radius: 12px;
+      padding: 3rem 1.5rem;
+      margin-bottom: 1.25rem;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    }
+
+    #no-results .error-code {
+      color: var(--amber);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    #no-results p {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin: 0 0 1.25rem 0;
+    }
+
+    .reset-btn {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .reset-btn:hover {
+      background: var(--cyan);
+      color: #050709;
+    }
+  </style>
+</head>
+<body>
+    
+
+ <!-- TOP TERMINAL HUD HEADER -->
+  <header>
+    <div class="terminal-bar">
+      <span class="dot dot-red"></span>
+      <span class="dot dot-yellow"></span>
+      <span class="dot dot-green"></span>
+      <span class="terminal-path">root@faisal:~/zero-to-zeroday/war-diary</span>
+      <span class="live-indicator"><span class="pulse"></span>ACTIVE_LOG</span>
+    </div>
+
+    <div class="header-body">
+      <div>
+        <h1>ZERO TO ZERO-DAY WAR DIARY</h1>
+        <p class="subtitle">&gt;_ 80% Doing • 20% Reading • Break Things on Purpose • Public Proof Over Certificates</p>
+      </div>
+
+      <div class="stats">
+        <span class="stat-pill">FOCUS // <span id="current-focus">Phase 0 (Linux)</span></span>
+        <span class="stat-pill">LOGS // <span id="entry-count">0</span></span>
+        <span class="stat-pill">ROOTED // <span id="rooted-count">0</span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CATEGORY FILTER BAR + MAGNIFYING GLASS SEARCH -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterEntries('all', this)">All Logs</button>
+    <button class="filter-btn" onclick="filterEntries('foundation', this)">Phases 0–2 (Foundations)</button>
+    <button class="filter-btn" onclick="filterEntries('pentest', this)">Phases 3–4 (Pentesting)</button>
+    <button class="filter-btn" onclick="filterEntries('exploit', this)">Phases 5–10 (Exploit &amp; Kernel)</button>
+
+    <!-- Collapsible Magnifying Glass Search -->
+    <div class="search-wrapper" id="search-wrapper">
+      <button type="button" class="search-toggle-btn" id="search-toggle" title="Search logs & commands" aria-label="Toggle search">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+      <input 
+        type="search" 
+        id="search-input" 
+        class="search-input" 
+        placeholder="grep logs, commands..." 
+        oninput="applyAllFilters()"
+      >
+    </div>
+  </div>
+  <!-- MAIN DIARY FEED (Chronological: Add newest entries at the bottom before </main>) -->
+  <main id="diary-feed"> 
+<!-- ==========================================================================
+     ZERO TO ZERO-DAY WAR DIARY — ENTRY TEMPLATES
+     How to use:
+     1. Copy ONE of the three <article> blocks below (Foundations, Pentesting, or Exploit Dev).
+     2. Open your index.html file and paste it right BEFORE the closing </main> tag.
+     3. Update the Phase/Section number, Title, Objective, Commands, and Takeaways.
+     4. Save and push to GitHub — LOGS, FOCUS, Search, and Copy buttons update automatically!
+     ========================================================================== -->
+
+
+<!-- ==========================================================================
+     TEMPLATE 1: PHASES 0–2 (FOUNDATIONS — CYAN THEME)
+     ========================================================================== -->
+<article class="entry" data-category="foundation" data-focus="Phase 0 (Linux)">
+  <div class="meta">
+    <span class="badge badge-foundation">Phase 0 • Section 1.X</span>
+    <span class="status">[✓ COMPLETE]</span>
+  </div>
+
+  <h2>Section Title Here</h2>
+
+  <h3>1. Objective</h3>
+  <p>Describe what you set out to configure, test, or learn in this session.</p>
+
+  <h3>2. Commands Executed</h3>
+  <pre><code>command --flag
+# Output: paste your terminal output here</code></pre>
+
+  <h3>3. What Broke &amp; What I Learned</h3>
+  <p>Document any errors encountered, how you fixed them, and key technical takeaways.</p>
+</article>
+
+
+<!-- ==========================================================================
+     TEMPLATE 2: PHASES 3–4 (PENTESTING — AMBER THEME)
+     Note: Add data-rooted="true" to <article> whenever you root a target machine!
+     ========================================================================== -->
+<article class="entry" data-category="pentest" data-focus="Phase 3 (Web &amp; Network Pentesting)" data-rooted="true">
+  <div class="meta">
+    <span class="badge badge-pentest">Phase 3 • Box / Lab Name</span>
+    <span class="status">[✓ COMPLETE] [ROOTED]</span>
+  </div>
+
+  <h2>Target Recon, Exploitation &amp; Privilege Escalation</h2>
+
+  <h3>1. Objective</h3>
+  <p>Enumerate services, exploit initial foothold, and escalate privileges to <code>root</code>.</p>
+
+  <h3>2. Commands &amp; Payloads</h3>
+  <pre><code>nmap -sC -sV -p- 10.10.10.X
+# Output: paste key findings or exploit commands here</code></pre>
+
+  <h3>3. Root Cause &amp; Remediation</h3>
+  <p>Explain the vulnerability exploited, privilege escalation vector, and how to patch it.</p>
+</article>
+
+
+<!-- ==========================================================================
+     TEMPLATE 3: PHASES 5–10 (EXPLOIT DEV & KERNEL — CRIMSON THEME)
+     ========================================================================== -->
+<article class="entry" data-category="exploit" data-focus="Phase 5 (Binary Exploitation)">
+  <div class="meta">
+    <span class="badge badge-exploit">Phase 5 • Section X.X</span>
+    <span class="status">[✓ COMPLETE]</span>
+  </div>
+
+  <h2>Vulnerability Analysis &amp; Exploit Development</h2>
+
+  <h3>1. Objective</h3>
+  <p>Analyze memory corruption / kernel bug and build a working proof-of-concept exploit.</p>
+
+  <h3>2. Vulnerable Code &amp; Exploit Script</h3>
+  <pre><code>// Paste C source, GDB disassembly, or Python pwntools exploit here</code></pre>
+
+  <h3>3. Root Cause &amp; Takeaway</h3>
+  <p>Explain registers, offsets, mitigations bypassed (ASLR, NX, Canary), and lessons learned.</p>
+</article>
+</main>
+<!-- EMPTY STATE WHEN SEARCH/FILTER HAS 0 MATCHES -->
+  <div id="no-results">
+    <div class="error-code">// ERR_0x00: NO MATCHING LOGS FOUND</div>
+    <p>Zero entries match your active phase filter or search query.</p>
+    <button type="button" class="reset-btn" onclick="resetFilters()">Reset Filters</button>
+  </div>
+<script>
+    let currentCategory = 'all';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDashboardStats();
+      addCopyButtons();
+      setupSearchToggle();
+    });
+
+    // 1. Auto-update LOGS, ROOTED, and FOCUS from your latest (bottom) entry
+    function updateDashboardStats() {
+      const allEntries = document.querySelectorAll('#diary-feed .entry');
+      document.getElementById('entry-count').textContent = allEntries.length;
+
+      if (allEntries.length > 0) {
+        const latestEntry = allEntries[allEntries.length - 1];
+        const customFocus = latestEntry.getAttribute('data-focus');
+        const badgeText = latestEntry.querySelector('.badge')?.textContent || '';
+        const phaseFallback = badgeText.split('•')[0].trim();
+
+        document.getElementById('current-focus').textContent = customFocus || phaseFallback;
+      }
+
+      let rooted = 0;
+      allEntries.forEach(entry => {
+        if (entry.dataset.rooted === 'true' || entry.textContent.includes('[ROOTED]')) {
+          rooted++;
+        }
+      });
+      document.getElementById('rooted-count').textContent = rooted;
+    }
+
+    // 2. Toggle Expandable Magnifying Glass Search Bar
+    function setupSearchToggle() {
+      const wrapper = document.getElementById('search-wrapper');
+      const toggleBtn = document.getElementById('search-toggle');
+      const input = document.getElementById('search-input');
+
+      toggleBtn.addEventListener('click', () => {
+        const isOpen = wrapper.classList.toggle('open');
+        if (isOpen) {
+          input.focus();
+        } else {
+          input.value = '';
+          applyAllFilters();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          wrapper.classList.remove('open');
+          input.value = '';
+          applyAllFilters();
+        }
+      });
+    }
+
+    // 3. Category Filter Button Handler
+    function filterEntries(category, clickedBtn) {
+      currentCategory = category;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      clickedBtn.classList.add('active');
+      applyAllFilters();
+    }
+
+    // 4. Combined Search + Category Filter + "No Logs Found" Toggle
+    function applyAllFilters() {
+      const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      const entries = document.querySelectorAll('#diary-feed .entry');
+      let visibleCount = 0;
+
+      entries.forEach(entry => {
+        const entryCategory = entry.getAttribute('data-category');
+        const entryText = entry.textContent.toLowerCase();
+
+        const matchesCategory = (currentCategory === 'all') || (entryCategory === currentCategory);
+        const matchesSearch = !searchQuery || entryText.includes(searchQuery);
+
+        if (matchesCategory && matchesSearch) {
+          entry.style.display = 'block';
+          visibleCount++;
+        } else {
+          entry.style.display = 'none';
+        }
+      });
+
+      document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    // 5. Reset Filters Button inside Empty State
+    function resetFilters() {
+      currentCategory = 'all';
+      document.querySelectorAll('.filter-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === 0);
+      });
+
+      const input = document.getElementById('search-input');
+      input.value = '';
+      document.getElementById('search-wrapper').classList.remove('open');
+
+      applyAllFilters();
+    }
+
+    // 6. Add Copy Buttons to Terminal Blocks
+    function addCopyButtons() {
+      document.querySelectorAll('pre').forEach(pre => {
+        const btn = document.createElement('button');
+        btn.textContent = 'Copy';
+        btn.type = 'button';
+        btn.style.cssText = 'position:absolute; top:8px; right:8px; background:var(--surface-solid); color:var(--cyan); border:1px solid var(--border-subtle); padding:3px 9px; border-radius:5px; font-family:inherit; font-size:0.75rem; cursor:pointer;';
+
+        btn.addEventListener('click', () => {
+          const code = pre.querySelector('code').innerText;
+          navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.borderColor = 'var(--emerald)';
+            btn.style.color = 'var(--emerald)';
+            setTimeout(() => {
+              btn.textContent = 'Copy';
+              btn.style.borderColor = 'var(--border-subtle)';
+              btn.style.color = 'var(--cyan)';
+            }, 1500);
+          });
+        });
+
+        pre.appendChild(btn);
+      });
+    }
+  </script>
+</body>
