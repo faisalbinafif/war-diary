@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!-- Declares HTML5 document type so all modern browsers render the page properly -->
 <html lang="en">
+
 <head>
   <!-- Sets UTF-8 encoding so symbols like ✓ and • render properly -->
   <meta charset="UTF-8">
@@ -16,20 +17,32 @@
   <style>
     /* [UPDATE HERE] Change any hex color code below to re-theme the whole page */
     :root {
-      --bg: #090d16;           /* Main page background */
-      --surface: #111827;      /* Diary entry card background */
-      --border: #1f2937;       /* Subtle border lines */
-      --text: #e5e7eb;         /* Main readable text color */
-      --muted: #9ca3af;        /* Dimmed text for dates and subtitles */
-      --cyan: #38bdf8;         /* Highlight color for Foundations (Phases 0-2) */
-      --amber: #f59e0b;        /* Highlight color for Pentesting (Phases 3-4) */
-      --purple: #a855f7;       /* Highlight color for Exploit Dev (Phases 5-10) */
-      --emerald: #10b981;      /* Green color for completion status */
-      --code-bg: #05080f;      /* Dark background for terminal code boxes */
+      --bg: #090d16;
+      /* Main page background */
+      --surface: #111827;
+      /* Diary entry card background */
+      --border: #1f2937;
+      /* Subtle border lines */
+      --text: #e5e7eb;
+      /* Main readable text color */
+      --muted: #9ca3af;
+      /* Dimmed text for dates and subtitles */
+      --cyan: #38bdf8;
+      /* Highlight color for Foundations (Phases 0-2) */
+      --amber: #f59e0b;
+      /* Highlight color for Pentesting (Phases 3-4) */
+      --purple: #a855f7;
+      /* Highlight color for Exploit Dev (Phases 5-10) */
+      --emerald: #10b981;
+      /* Green color for completion status */
+      --code-bg: #05080f;
+      /* Dark background for terminal code boxes */
     }
 
     /* Keeps padding and borders inside the element's total width */
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     /* Centers the diary in a readable 960px column */
     body {
@@ -60,6 +73,7 @@
       letter-spacing: -0.5px;
       background: linear-gradient(90deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -106,7 +120,8 @@
       transition: all 0.2s ease;
     }
 
-    .filter-btn:hover, .filter-btn.active {
+    .filter-btn:hover,
+    .filter-btn.active {
       background: var(--cyan);
       color: #090d16;
       border-color: var(--cyan);
@@ -122,7 +137,9 @@
       transition: border-color 0.15s ease;
     }
 
-    .entry:hover { border-color: #374151; }
+    .entry:hover {
+      border-color: #374151;
+    }
 
     /* Top row inside each card (Phase badge + Date + Right-aligned Status) */
     .meta {
@@ -144,17 +161,33 @@
     }
 
     /* Phase color classes */
-    .badge-foundation { background: rgba(56, 189, 248, 0.15); color: var(--cyan); }
-    .badge-pentest    { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
-    .badge-exploit    { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+    .badge-foundation {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+    }
+
+    .badge-pentest {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber);
+    }
+
+    .badge-exploit {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--purple);
+    }
 
     .status {
       color: var(--emerald);
       font-weight: 700;
-      margin-left: auto; /* Pushes completion text to the far right */
+      margin-left: auto;
+      /* Pushes completion text to the far right */
     }
 
-    h2 { margin: 0 0 1rem 0; font-size: 1.35rem; color: #ffffff; }
+    h2 {
+      margin: 0 0 1rem 0;
+      font-size: 1.35rem;
+      color: #ffffff;
+    }
 
     h3 {
       color: var(--cyan);
@@ -195,6 +228,7 @@
      HTML BODY (VISIBLE PAGE CONTENT)
      Everything inside <body> is what visitors see on your live website.
      ========================================================================== -->
+
 <body>
 
   <!-- TOP DASHBOARD HEADER -->
@@ -226,54 +260,69 @@
        ======================================================================== -->
   <main id="diary-feed">
 
-    <!-- EXAMPLE ENTRY 1 (EXPLOTATION PHASE) -->
+    <!-- EXAMPLE ENTRY  (EXPLOTATION PHASE) -->
     <article class="entry" data-category="exploit">
       <div class="meta">
-        <span class="badge badge-exploit">Phase 5 • Section 5C.8</span>
-        <span class="status">[✓ MILESTONE PASSED]</span>
+        <span class="badge badge-exploit">Phase 0 • Section 1.1</span>
+        <!-- <span class="status">[✓ MILESTONE PASSED]</span> -->
+        <span class="status">[✓ COMPLETE]</span>
       </div>
 
-      <h2>Finding Stack Buffer Overflow Offset in GDB</h2>
+      <h2>What is Linux? Kernel, distro, shell, GUI vs CLI</h2>
 
       <h3>1. Objective</h3>
-      <p>Compile a vulnerable C program without stack protections and calculate the exact byte offset needed to overwrite the saved instruction pointer (<code>RIP</code>).</p>
+      <p>Installing Virtualbox and Linux OS on my laptop(<code>RIP</code>).</p>
 
       <h3>2. Commands &amp; Code</h3>
-      <pre><code>// vuln.c
-#include &lt;stdio.h&gt;
-void vuln() {
-    char buffer[64];
-    gets(buffer);
-}
-int main() { vuln(); return 0; }
-
-// Compiled with: gcc -fno-stack-protector -no-pie vuln.c -o vuln
-gdb ./vuln -ex "run &lt;&lt;&lt; $(python3 -c 'print("A"*72 + "BBBBBB")')"</code></pre>
+      <pre><code><!-- // vuln.c
+    #include &lt;stdio.h&gt;
+      void vuln() {
+      char buffer[64];
+      gets(buffer);
+      }
+      int main() { vuln(); return 0; }
+  // Compiled with: gcc -fno-stack-protector -no-pie vuln.c -o vuln
+  gdb ./vuln -ex "run &lt;&lt;&lt; $(python3 -c 'print("A"*72 + "BBBBBB")')" -->
+NO Command usded.Only installation and downloads links I used, they are :
+Virtualbox link : https://www.virtualbox.org/
+Virtualbox dependencies [MS Visual C++ Redistributables] : https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
+LordOS Link : https://lordos.org/</code></pre>
 
       <h3>3. Root Cause &amp; Takeaway</h3>
-      <p>Because <code>gets()</code> performs no bounds checking, writing past the 64-byte buffer overwrote the 8-byte saved <code>RBP</code> register at offset 64 and corrupted <code>RIP</code> starting at byte 72.</p>
+      <!-- <p>Because <code>gets()</code> performs no bounds checking, writing past the 64-byte buffer overwrote the 8-byte
+        saved <code>RBP</code> register at offset 64 and corrupted <code>RIP</code> starting at byte 72.</p> -->
+      <p>My laptop could not handle Ubuntu desktop environment 26.10 LTS because of heavy resources and after some
+        research I found LordOS linux and it is working smoothly in my laptop's Virualbox</p>
     </article>
 
     <!-- EXAMPLE ENTRY 2 (FOUNDATION PHASE) -->
     <article class="entry" data-category="foundation">
       <div class="meta">
-        <span class="badge badge-foundation">Phase 0 • Section 1.5</span>
+        <!-- <span class="badge badge-foundation">Phase 0 • Section 1.5</span> -->
+        <span class="badge badge-foundation">Phase 0 • Section 1.2</span>
         <span class="status">[✓ COMPLETE]</span>
       </div>
 
-      <h2>Linux File Operations &amp; Directory Trees</h2>
+      <!-- <h2>Linux File Operations &amp; Directory Trees</h2> -->
+      <h2>The Terminal &amp; Prompt anatomy</h2>
 
       <h3>1. Objective</h3>
-      <p>Recreate a nested directory structure from memory using only terminal commands without touching the mouse.</p>
+      <!-- <p>Recreate a nested directory structure from memory using only terminal commands without touching the mouse.</p> -->
+      <p>Using commmand in new Linux OS and run some basic commands</p>
 
       <h3>2. Commands Executed</h3>
-      <pre><code>mkdir -p ~/lab/projects/{scripts,notes,logs}
+      <!-- <pre><code>mkdir -p ~/lab/projects/{scripts,notes,logs}
 touch ~/lab/projects/scripts/recon.sh
 cp ~/lab/projects/scripts/recon.sh ~/lab/projects/notes/recon.bak
-ls -laR ~/lab</code></pre>
+ls -laR ~/lab</code></pre> -->
+      <pre><code>pwd
+whoami
+date
+uname -a</code></pre>
 
-      <h3>3. What Broke &amp; What I Learned</h3>
-      <p>Running <code>mkdir</code> without the <code>-p</code> flag failed because the parent folder did not exist yet. Adding <code>-p</code> creates all missing parent directories in one command.</p>
+      <!-- <h3>3. What Broke &amp; What I Learned</h3>
+      <p>Running <code>mkdir</code> without the <code>-p</code> flag failed because the parent folder did not exist yet.
+        Adding <code>-p</code> creates all missing parent directories in one command.</p> -->
     </article>
 
   </main>
