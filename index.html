@@ -558,22 +558,25 @@ uname -a
 # Output: /home/faisal
 
 ls
-# Output: 
+# Output: ktop  Documents  Downloads  Music  Pictures  Public  Templates  Videos
 
-cd
-# Output: 
+cd Downloads/
+# Output: Nothing is in the Downloads directory 
 
 ls -al
 # Output: 
 
 ~
-# Output:
+# Output:bash: /home/faisal: Is a directory
 
-.. 
-# Output:   
+cd .. 
+# Output: It returns to the home directory or previous directory
 </code></pre>
 
       <h3>3. What Broke &amp; What I Learned</h3>
+      <p>
+        I isntalled Linux Mint in VMware software because Virtualbox bidirectional function is not working properly and Ubuntu is not getting in installed in Virtualbox. I learned that the <code>pwd</code> command prints the current working directory, and <code>ls</code> lists files and directories. The <code>cd</code> command changes the current directory, and <code>..</code> moves up one level in the directory hierarchy.
+      </p>
       <!-- <p>Adding <code>--version</code> to commands like <code>whoami</code> shows the version, package format, and
         license. The <code>pwd</code> command prints the current working directory, and <code>uname -a</code> prints all
         system and kernel information in a single command.</p> -->
