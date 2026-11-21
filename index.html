@@ -589,32 +589,34 @@ cd ..
         <span class="status">[✓ COMPLETE]</span>
       </div>
 
-      <h2>Navigation &amp; Basic Commands</h2>
+      <h2>File creation &amp; Reading Commands</h2>
 
       <h3>1. Objective</h3>
-      <p>Using the basic commands and navigate from one location to another without using a GUI.</p>
+      <p>Using the commands to creates five files and read them with three different commands using the terminal without using a GUI.</p>
 
       <h3>2. Commands Executed</h3>
-      <pre><code>pwd
-# Output: /home/faisal
+      <pre><code>touch text1.txt
+# Output: Created an empty file named text1.txt
 
-ls
-# Output: 
+echo "writing first line using 'cat' command" > text1.txt
+# Output: used the 'cat' command to write a line in the text1.txt file  
 
-cd
-# Output: 
+cat text1.txt 
+# Output: writing first line using 'cat' command
 
-ls -al
-# Output: 
+less text1.txt
+# Output: The less command displays the contents of the text1.txt file in a scrollable view. You can navigate using the arrow keys, and press 'q' to exit.
 
-~
-# Output:
+head text1.txt
+# Output: writing first line using 'cat' command (The head command shows the first 10 lines of the file, but since the file has only one line, it displays that line.)
 
-.. 
-# Output:   
+tail text1.txt
+# Output: writing first line using 'cat' command (This command shows the last 10 lines of the file, but since the file has only one line, it displays that line.)
+
 </code></pre>
 
       <h3>3. What Broke &amp; What I Learned</h3>
+      <p>I learned how to create and read files using various terminal commands which I wrote above.</p>
       <!-- <p>Adding <code>--version</code> to commands like <code>whoami</code> shows the version, package format, and
         license. The <code>pwd</code> command prints the current working directory, and <code>uname -a</code> prints all
         system and kernel information in a single command.</p> -->
